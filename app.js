@@ -21,7 +21,6 @@ const QUALITY_TIERS = [
   { name: '540p', width: 960, height: 540, fps: 20, bitrate: 550_000 },
   { name: '360p', width: 640, height: 360, fps: 15, bitrate: 280_000 }
 ];
-
 let socket = null;
 let stream = null;
 let audioContext = null;
@@ -158,7 +157,7 @@ function createEncoder() {
       // Real-time calls should drop stale video instead of queueing it.
       // Keyframes get a little more room because they are larger.
       const maxBacklog = chunk.type === 'key' ? 192_000 : 64_000;
-      if (socket.bufferedAmount > 64_000) return;
+      if (socket.bufferedAmount > 192_000) return;
       socket.send(packetizeVideo(chunk, tier.width, tier.height));
     },
     error: (error) => {
@@ -251,7 +250,7 @@ function requestRemoteKeyFrame() {
 }
 
 function encodeCurrentFrame(nowMs) {
-  if (!videoEncoder || videoEncoder.state !== 'configured' || !cameraEnabled || peerCount < 2) return;
+  if (!videoEncoder || videoEncoder.state !== 'configured' || !cameraEnabled || peerCount < 1) return;
   if (!stream || els.localVideo.readyState < 2 || videoEncoder.encodeQueueSize > 1) return;
   const tier = currentTier();
   const minGap = 1000 / tier.fps;
