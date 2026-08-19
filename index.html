@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#090b11" />
+    <meta name="description" content="LinkLine private two-person audio and video calls." />
+    <title>LinkLine</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="homeScreen" class="home-screen">
+        <header class="topbar">
+          <a class="logo" href="/" aria-label="LinkLine home">
+            <span class="logo-mark">L</span>
+            <span>LinkLine</span>
+          </a>
+          <span class="privacy-chip">
+            <span class="privacy-dot"></span>
+            Private room
+          </span>
+        </header>
+
+        <div class="home-layout">
+          <div class="intro">
+            <span class="kicker">PRIVATE 1-TO-1 CALLS</span>
+            <h1>Call your friend.<br /><span>No extra app.</span></h1>
+            <p>Open the link, enter the same passphrase, and start talking. Camera and mic only turn on after you tap Join.</p>
+            <div class="feature-row" aria-label="Call features">
+              <span>Video</span>
+              <span>Voice</span>
+              <span>2 people max</span>
+            </div>
+          </div>
+
+          <section id="setupCard" class="join-card" aria-labelledby="joinTitle">
+            <div class="card-heading">
+              <div>
+                <span class="step-pill">1</span>
+                <h2 id="joinTitle">Start or join a call</h2>
+              </div>
+              <p>Use the same room and passphrase on both devices.</p>
+            </div>
+
+            <label class="field" for="roomInput">
+              <span class="field-label">Room code</span>
+              <div class="room-row">
+                <input id="roomInput" class="code-input" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" placeholder="ABCD-1234" />
+                <button id="newRoomBtn" class="icon-text-btn" type="button" title="Generate a new room code" aria-label="Generate new room code">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7"/></svg>
+                  New
+                </button>
+              </div>
+            </label>
+
+            <label class="field" for="passwordInput">
+              <span class="field-label">Passphrase</span>
+              <div class="password-row">
+                <input id="passwordInput" type="password" autocomplete="new-password" maxlength="80" placeholder="At least 6 characters" />
+                <button id="showPasswordBtn" class="input-icon-btn" type="button" aria-label="Show passphrase" title="Show passphrase">
+                  <svg id="eyeIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                </button>
+              </div>
+            </label>
+
+            <button id="joinBtn" class="join-btn" type="button">
+              <span>Join call</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+
+            <button id="copyBtn" class="invite-btn" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07.07l2-2A5 5 0 0 0 12 4l-1.15 1.15M14 11a5 5 0 0 0-7.07-.07l-2 2A5 5 0 0 0 12 20l1.15-1.15"/></svg>
+              Copy invite link
+            </button>
+
+            <div id="setupMessage" class="setup-message" role="status">
+              <span class="info-dot">i</span>
+              <span>Camera and microphone permissions are requested only when you join.</span>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="callCard" class="call-screen hidden" aria-live="polite">
+        <div id="videoStage" class="video-stage">
+          <div class="remote-video-wrap">
+            <canvas id="remoteCanvas" class="remote-video hidden" width="1280" height="720" aria-label="Friend's live camera"></canvas>
+            <div id="remotePlaceholder" class="remote-placeholder">
+              <div class="avatar-ring"><div class="placeholder-avatar">LL</div></div>
+              <strong id="videoPlaceholderText">Waiting for your friend…</strong>
+              <span>Keep this tab open</span>
+            </div>
+          </div>
+
+          <div class="call-top-overlay">
+            <div class="call-room">
+              <span class="logo-mark small">L</span>
+              <div>
+                <strong>LinkLine</strong>
+                <span id="roomLabel">—</span>
+              </div>
+            </div>
+            <div id="statusPill" class="status waiting">
+              <span class="status-dot"></span>
+              <span id="statusText">Connecting…</span>
+            </div>
+          </div>
+
+          <div class="local-video-wrap">
+            <video id="localVideo" class="local-video" autoplay muted playsinline></video>
+            <div id="localCameraOff" class="local-off hidden">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m2 2 20 20M16 16H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1m7 0h3a2 2 0 0 1 2 2v1l4-2v10l-4-2v1"/></svg>
+              Camera off
+            </div>
+            <span class="you-label">You</span>
+          </div>
+
+          <div class="call-bottom-overlay">
+            <div class="call-meta">
+              <strong id="peerText">Waiting for your friend</strong>
+              <span id="latencyText">Secure transport ready</span>
+              <span id="qualityText">540p · 20 fps target</span>
+            </div>
+
+            <div class="call-actions" aria-label="Call controls">
+              <button id="muteBtn" class="call-control" type="button" aria-pressed="false" aria-label="Mute microphone">
+                <span class="control-icon">
+                  <svg id="muteIconSvg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8"/></svg>
+                </span>
+                <span id="muteLabel">Mute</span>
+              </button>
+
+              <button id="cameraBtn" class="call-control" type="button" aria-pressed="false" aria-label="Turn camera off">
+                <span class="control-icon">
+                  <svg id="cameraIconSvg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>
+                </span>
+                <span id="cameraLabel">Camera</span>
+              </button>
+
+              <button id="fullscreenBtn" class="call-control" type="button" aria-label="Fullscreen">
+                <span class="control-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+                </span>
+                <span>Full screen</span>
+              </button>
+
+              <button id="leaveBtn" class="call-control leave" type="button" aria-label="Leave call">
+                <span class="control-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.8 15.8 0 0 1 10.8 0l2.1 1a2 2 0 0 1 .9 2.6l-1 2a2 2 0 0 1-2.3 1.1l-2.5-.7a2 2 0 0 1-1.4-1.7l-.2-1.3a12 12 0 0 0-2 0l-.2 1.3a2 2 0 0 1-1.4 1.7l-2.5.7a2 2 0 0 1-2.3-1.1l-1-2a2 2 0 0 1 .9-2.6l2.1-1Z"/></svg>
+                </span>
+                <span>Leave</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <canvas id="captureCanvas" class="hidden" width="1280" height="720"></canvas>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
