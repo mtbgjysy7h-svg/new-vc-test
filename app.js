@@ -157,7 +157,12 @@ function createEncoder() {
       // Real-time calls should drop stale video instead of queueing it.
       // Keyframes get a little more room because they are larger.
       const maxBacklog = chunk.type === 'key' ? 192_000 : 64_000;
-      if (socket.bufferedAmount > 192_000) return;
+  const limit =
+  chunk.type === 'key'
+    ? 512_000
+    : 192_000;
+
+if (socket.bufferedAmount > limit) return;
       socket.send(packetizeVideo(chunk, tier.width, tier.height));
     },
     error: (error) => {
