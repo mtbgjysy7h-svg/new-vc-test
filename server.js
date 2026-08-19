@@ -50,7 +50,27 @@ function sendText(peer, value) {
 }
 
 function sendBinary(peer, data) {
-  if (peer.closed) return;
+  if (peer.closed || peer.socket.destroyed) return;
+
+  const kind = data[0];
+  const queued = peer.socket.writableLength;
+
+  // Video is disposable in a live call.
+  // Drop old/new frames instead of building latency.
+  if (
+    kind === PACKET_VIDEO &&
+    (peer.socket.writableNeedDrain || queued > 48_000)
+  ) {
+    return;
+  }
+
+  // If things are REALLY backed up, drop stale audio too.
+  if (
+    kind === PACKET_AUDIO &&
+    queued > 128_000
+  ) {
+    return;
+  }
 
   try {
     peer.socket.write(frame(0x2, data));
