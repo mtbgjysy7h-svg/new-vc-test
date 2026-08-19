@@ -69,8 +69,7 @@ async function roomProof(room, passphrase) {
 }
 
 function wsUrl() {
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${protocol}//${location.host}/api/ws`;
+  return 'wss://vc--new-vc-test--gxc2bvsph8r9.code.run/api/ws';
 }
 
 function setSetupMessage(text, error = false, success = false) {
