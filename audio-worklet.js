@@ -68,11 +68,9 @@ class StreamPlayerProcessor extends AudioWorkletProcessor {
     this.offset = 0;
     this.started = false;
 
-    // 2 chunks = about 40 ms of jitter protection.
-    this.targetChunks = 2;
+    this.targetChunks = 4;
 
-    // Never play a huge backlog of old speech.
-    this.maxChunks = 4;
+    this.maxChunks = 10;
 
     // Transport is 24 kHz while output is 48 kHz.
     this.sampleValue = 0;
