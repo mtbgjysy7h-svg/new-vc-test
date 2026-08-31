@@ -152,18 +152,29 @@ function createEncoder() {
   videoEncoder?.close();
   videoEncoder = new VideoEncoder({
     output: (chunk) => {
-      if (!socket || socket.readyState !== WebSocket.OPEN || peerCount < 2 || !cameraEnabled) return;
-      const tier = currentTier();
-      // Real-time calls should drop stale video instead of queueing it.
-      // Keyframes get a little more room because they are larger.
-      const maxBacklog = chunk.type === 'key' ? 192_000 : 64_000;
-  const limit =
-  chunk.type === 'key'
-    ? 512_000
-    : 192_000;
+  if (
+    !socket ||
+    socket.readyState !== WebSocket.OPEN ||
+    peerCount < 2 ||
+    !cameraEnabled
+  ) return;
 
-if (socket.bufferedAmount > limit) return;
-      socket.send(packetizeVideo(chunk, tier.width, tier.height));
+  const tier = currentTier();
+
+  const limit = chunk.type === 'key'
+    ? 256_000
+    : 96_000;
+
+  if (socket.bufferedAmount > limit) {
+    // We dropped part of the VP8 chain.
+    // Make the next frame a complete fresh picture.
+    forceKeyFrame = true;
+    return;
+  }
+
+  socket.send(
+    packetizeVideo(chunk, tier.width, tier.height)
+  );
     },
     error: (error) => {
       console.error('Video encoder error:', error);
