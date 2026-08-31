@@ -282,7 +282,7 @@ function encodeCurrentFrame(nowMs) {
   let frame;
   try {
     frame = new VideoFrame(els.captureCanvas, { timestamp: Math.round(performance.now() * 1000) });
-    const periodicKey = framesSinceKey >= tier.fps * 3;
+    const periodicKey = framesSinceKey >= tier.fps * 2;
     videoEncoder.encode(frame, { keyFrame: forceKeyFrame || periodicKey });
     if (forceKeyFrame || periodicKey) {
       forceKeyFrame = false;
