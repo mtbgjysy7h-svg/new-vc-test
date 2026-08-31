@@ -314,7 +314,6 @@ if (videoDropped) {
 }
 
 function processFrame(peer, opcode, payload) {
-function processFrame(peer, opcode, payload) {
   if (opcode === 0x8) {
     cleanup(peer);
     return;
