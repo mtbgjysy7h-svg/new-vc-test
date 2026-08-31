@@ -50,20 +50,34 @@ function sendText(peer, value) {
 }
 
 function sendBinary(peer, data) {
-  if (peer.closed || peer.socket.destroyed) return;
+  if (peer.closed || peer.socket.destroyed) {
+    return false;
+  }
 
   const kind = data[0];
   const queued = peer.socket.writableLength;
 
-  // Video is disposable in a live call.
-  // Drop old/new frames instead of building latency.
   if (
     kind === PACKET_VIDEO &&
     (peer.socket.writableNeedDrain || queued > 48_000)
   ) {
-    return;
+    return false;
   }
 
+  if (
+    kind === PACKET_AUDIO &&
+    queued > 128_000
+  ) {
+    return false;
+  }
+
+  try {
+    peer.socket.write(frame(0x2, data));
+    return true;
+  } catch {
+    return false;
+  }
+}
   // If things are REALLY backed up, drop stale audio too.
   if (
     kind === PACKET_AUDIO &&
@@ -280,11 +294,30 @@ function handleBinary(peer, data) {
 
   const room = rooms.get(peer.roomId);
   if (!room) return;
+let videoDropped = false;
 
-  for (const other of room.peers) {
-    if (other !== peer) {
-      sendBinary(other, data);
+for (const other of room.peers) {
+  if (other !== peer) {
+    const sent = sendBinary(other, data);
+
+    if (kind === PACKET_VIDEO && !sent) {
+      videoDropped = true;
     }
+  }
+}
+
+if (videoDropped) {
+  const now = Date.now();
+
+  if (
+    !peer.lastKeyframeRequestAt ||
+    now - peer.lastKeyframeRequestAt > 1000
+  ) {
+    peer.lastKeyframeRequestAt = now;
+
+    sendText(peer, {
+      type: 'request-keyframe'
+    });
   }
 }
 
