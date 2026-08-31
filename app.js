@@ -288,20 +288,25 @@ function encodeCurrentFrame(nowMs) {
 
 function startVideoCapture() {
   stopVideoCapture();
+
   if (!videoCodecSupported) return;
+
   lastVideoEncodeAt = 0;
 
-  if (typeof els.localVideo.requestVideoFrameCallback === 'function') {
-    const loop = (now) => {
-      encodeCurrentFrame(now);
-      videoFrameCallbackId = els.localVideo.requestVideoFrameCallback(loop);
-    };
-    videoFrameCallbackId = els.localVideo.requestVideoFrameCallback(loop);
-  } else {
-    videoInterval = setInterval(() => encodeCurrentFrame(performance.now()), 20);
-  }
-}
+  // Don't use requestVideoFrameCallback here.
+  // It can stop/throttle when the tab isn't being rendered.
+  videoInterval = setInterval(() => {
+    if (!stream || !cameraEnabled) return;
 
+    const track = stream.getVideoTracks()[0];
+
+    if (!track || track.readyState !== 'live') {
+      return;
+    }
+
+    encodeCurrentFrame(performance.now());
+  }, 20);
+}
 function stopVideoCapture() {
   if (videoFrameCallbackId !== null && typeof els.localVideo.cancelVideoFrameCallback === 'function') {
     try { els.localVideo.cancelVideoFrameCallback(videoFrameCallbackId); } catch {}
