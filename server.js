@@ -78,18 +78,7 @@ function sendBinary(peer, data) {
     return false;
   }
 }
-  // If things are REALLY backed up, drop stale audio too.
-  if (
-    kind === PACKET_AUDIO &&
-    queued > 128_000
-  ) {
-    return;
-  }
-
-  try {
-    peer.socket.write(frame(0x2, data));
-  } catch {}
-}
+ 
 
 function sendPong(peer, payload) {
   if (peer.closed) return;
