@@ -667,3 +667,24 @@ window.addEventListener('beforeunload', () => { intentionalClose = true; socket?
 const initialRoom = new URL(location.href).searchParams.get('room');
 els.roomInput.value = initialRoom ? normalizeRoom(initialRoom) : randomRoom();
 updateQualityLabel();
+document.addEventListener('visibilitychange', async () => {
+  if (!joinedRoom || !stream) return;
+
+  const videoTrack = stream.getVideoTracks()[0];
+
+  if (videoTrack?.readyState === 'live') {
+    if (els.localVideo.srcObject !== stream) {
+      els.localVideo.srcObject = stream;
+    }
+
+    await els.localVideo.play().catch(() => {});
+
+    if (cameraEnabled) {
+      forceKeyFrame = true;
+    }
+  }
+
+  if (audioContext?.state === 'suspended') {
+    await audioContext.resume().catch(() => {});
+  }
+});
